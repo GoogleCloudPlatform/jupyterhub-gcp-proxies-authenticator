@@ -3,7 +3,7 @@
 This load testing environment was written specifically for a [serverless pixel tracking architecture solution paper](https://cloud.google.com/solutions/serverless-pixel-tracking) but the process can be reused for other purposes as well.
 
 ## Prework (Optional)
-The [00_prewok](/00_prework) folder contains the files that are used by Container Engine in order to launch the load testing. We included those files for information or for you to be able to customize the environment but to run this code, you do not need to changed anything here.
+The [00_prework](/00_prework) folder contains the files that are used by Container Engine in order to launch the load testing. We included those files for information or for you to be able to customize the environment but to run this code, you do not need to changed anything here.
 
 You can find the explanation in the [README](/00_prework/README.md) file in that folder
 
@@ -45,7 +45,7 @@ gsutil acl ch -u AllUsers:R gs://[YOUR_PREFIX]-gcs-load-testing/targets.txt
 
 ## Load test
 
-### Create K8S cluster
+### Create Kubernetes cluster
 Containers need about:
 - 0.4 max core from what we observe to 1000 qps
 - 100Mi memory
