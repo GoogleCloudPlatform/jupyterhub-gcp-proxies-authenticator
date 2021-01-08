@@ -113,6 +113,7 @@ class ProxyUserLoginHandler(BaseHandler):
       self.write(
           self.render_template(
               self.authenticator.template_to_render,
+              sync=True,
               user=user,
               next_url=self.get_next_url(user),
           )
