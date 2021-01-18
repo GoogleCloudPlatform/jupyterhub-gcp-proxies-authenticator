@@ -42,16 +42,16 @@ class ProxyUserLoginHandler(BaseHandler):
           print( "obj.%s = %s" % (attr, getattr(obj, attr)))
 
     def get(self):
-      """ 
+      """
       Uses the check_header parameters to retrieve the email of the already
       authenticated user.
       For JupyterHub + Inverting Proxy agent, use X-Inverting-Proxy-User-Id.
       For JupyterHub + Cloud IAP, X-Goog-IAP-JWT-Assertion. """
 
-      if self.authenticator.check_header == "X-Inverting-Proxy-User-Id": 
+      if self.authenticator.check_header == "X-Inverting-Proxy-User-Id":
 
-        b64_email = self.request.headers.get(self.authenticator.check_header, "")      
-        
+        b64_email = self.request.headers.get(self.authenticator.check_header, "")
+
         # Provides a dummy email to try the code locally.
         if b64_email == "" and self.authenticator.dummy_email:
           self.log.info(f'Using a dummy email {self.authenticator.dummy_email}')
@@ -62,45 +62,46 @@ class ProxyUserLoginHandler(BaseHandler):
 
         user_email = b64decode(b64_email).decode("ascii")
         self.log.info(f'user_email is {user_email}')
-      
-      elif self.authenticator.check_header == "X-Goog-IAP-JWT-Assertion": 
+
+      elif self.authenticator.check_header == "X-Goog-IAP-JWT-Assertion":
 
         from googleapiclient import discovery
         from oauth2client.client import GoogleCredentials
 
         credentials = GoogleCredentials.get_application_default()
-        compute = discovery.build('compute', 'v1', credentials=credentials, 
+        compute = discovery.build('compute', 'v1', credentials=credentials,
                                   cache_discovery=False)
-        
+
         request = compute.backendServices().get(
             project=self.authenticator.project_id,
             backendService=self.authenticator.backend_service_name
         )
         backend_service = request.execute()
         backend_service_id = backend_service['id']
-        
-        self.log.info(f'''self.authenticator.check_header name is 
+
+        self.log.info(f'''self.authenticator.check_header name is
             {self.authenticator.check_header}''')
-        self.log.info(f'''self.authenticator.check_header value is 
+        self.log.info(f'''self.authenticator.check_header value is
             {self.request.headers.get(self.authenticator.check_header, "")}''')
-        self.log.info(f'''self.authenticator.backend_service_id is 
+        self.log.info(f'''self.authenticator.backend_service_id is
             {backend_service_id}''')
-        
+
         _, user_email, _ = validate_iap_jwt_from_compute_engine(
-            self.request.headers.get(self.authenticator.check_header, ""), 
+            self.request.headers.get(self.authenticator.check_header, ""),
             self.authenticator.project_number,
             backend_service_id
         )
 
         if not user_email:
           raise web.HTTPError(401, 'Can not verify the IAP authentication.')
-      
+
       else:
-        raise web.HTTPError(400, 'Mismatch Authentication method and Header.')            
-      
-      username, _ = user_email.split("@")
+        raise web.HTTPError(400, 'Mismatch Authentication method and Header.')
+
+      # username, _ = user_email.split("@")
+      username = user_email
       user = self.user_from_username(username)
-      
+
       # JupyterHub doesn't set the value for that key for some reason.
       if not hasattr(user, 'json_escaped_name'):
           setattr(user, 'json_escaped_name', json.dumps(user.name)[1:-1])
@@ -122,7 +123,7 @@ class ProxyUserLoginHandler(BaseHandler):
 class GCPProxiesAuthenticator(Authenticator):
     """ ProxyUser authenticator.
 
-    Uses a header that refers to the already logged in user to do a silent 
+    Uses a header that refers to the already logged in user to do a silent
     authentication to JupyterHub.
     """
     login_handler = ProxyUserLoginHandler
@@ -138,7 +139,7 @@ class GCPProxiesAuthenticator(Authenticator):
         config=True,
         help=""" Project id. """,
     )
-    
+
     project_number = Unicode(
         '',
         config=True,
