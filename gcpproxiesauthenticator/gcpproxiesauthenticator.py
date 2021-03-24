@@ -99,7 +99,7 @@ class ProxyUserLoginHandler(BaseHandler):
         raise web.HTTPError(400, 'Mismatch Authentication method and Header.')
 
       # username, _ = user_email.split("@")
-      username = user_email
+      username = user_email.lower()
       user = self.user_from_username(username)
 
       # JupyterHub doesn't set the value for that key for some reason.
